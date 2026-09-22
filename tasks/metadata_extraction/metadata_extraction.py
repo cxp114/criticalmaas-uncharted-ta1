@@ -224,7 +224,7 @@ class MetadataExtractor(Task):
     ALPHANUMERIC_PATTERN = re.compile(r".*[a-zA-Z].*\d.*|.*\d.*[a-zA-Z].*|.*[a-zA-Z].*")
 
     # patterns for scale normalization
-    SCALE_PATTERN = re.compile(r"[,\. a-zA-z]+")
+    SCALE_PATTERN = re.compile(r"[,\. A-Za-z]+")
     SCALE_PREPEND = re.compile(r"\d+:")
 
     # quadrangle normalization

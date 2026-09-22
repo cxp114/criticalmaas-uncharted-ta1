@@ -174,8 +174,10 @@ class UTMCoordinatesExtractor(CoordinatesExtractor):
         max_lon = utm.to_latlon(
             MAX_EASTING, northing, utm_zone[0], northern=utm_zone[1]
         )[1]
-        logger.info(
-            f"derived utm zone min-max is ({min_lon}, {max_lon}) at latitude {latitude}"
+        logger.debug(
+            "derived utm zone range computed for candidate zone=%s northern=%s",
+            utm_zone[0],
+            utm_zone[1],
         )
 
         # zone starts within the geofence either ending within or outside the geofence
