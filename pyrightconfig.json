@@ -1,0 +1,9 @@
+{
+    "ignore": [
+        "**/segmentation/layoutlmft",
+        "**/segmentation/ditod",
+    ],
+    "reportMissingImports": false,
+    "typeCheckingMode": "basic",
+    "reportPrivateImportUsage": false
+}

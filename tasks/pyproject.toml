@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lara-tasks"
+version = "1.0.0"
+description = "LARA pipeline tasks"
+readme = "README.md"
+dependencies = [
+    "numpy",
+    "tqdm",
+    "pydantic",
+    "tiktoken",
+    "google-cloud-vision",
+    "google-auth",
+    "msal",
+    "grpcio",
+    "boto3==1.35.99", # https://github.com/boto/boto3/issues/4398
+    "boto3-stubs[s3]",
+    "pillow",
+    "geopy",
+    "matplotlib",
+    "opencv-python>=4.8",
+    "protobuf",
+    "scikit_image",
+    "scikit_learn",
+    "Shapely",
+    "utm",
+    "parmap",
+    "scipy",
+    "pika",
+    "langchain",
+    "langchain-openai",
+    "stateplane",
+    "coloredlogs",
+    "cdrc @ git+https://github.com/DARPA-CRITICALMAAS/cdrc.git@main",
+    "rasterio"
+]
+
+[project.optional-dependencies]
+segmentation=[
+    # torch is left out here because detectron requires it be present before pip
+    # install runs - it should be installed manually as a precondition
+    # (see https://github.com/facebookresearch/detectron2/issues/4472)#
+    # "torch==2.0.1",
+    "detectron2 @ git+https://github.com/facebookresearch/detectron2.git@a59f05630a8f205756064244bf5beb8661f96180",
+    "torchvision==0.15.2",
+    "transformers==4.49",
+    "timm"
+]
+point = [
+    "torch==2.0.1",
+    "torchvision==0.15.2",
+    "scipy",
+    "dill",
+    "ultralytics"
+]
+development = [
+    "pytest",
+    "pyright",
+    "moto"
+]
+
+[tool.setuptools.packages]
+find = {}

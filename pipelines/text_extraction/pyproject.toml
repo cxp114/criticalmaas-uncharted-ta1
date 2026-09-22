@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lara-text-extraction"
+version = "1.0.0"
+description = "LARA text extraction pipeline and server"
+readme = "README.md"
+dependencies = ["lara-tasks", "flask"]
+
+[tool.setuptools.packages]
+find = {}
