@@ -157,9 +157,10 @@ if __name__ == "__main__":
     if p.rest:
         app.config["result_key"] = metadata_result_key
         if p.debug:
-            app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
-        else:
-            app.run(host="0.0.0.0", port=5000)
+            logger.warning(
+                "Flask debug mode is disabled for safety; use --log_level for verbose logging."
+            )
+        app.run(host="0.0.0.0", port=5000, debug=False, use_reloader=False)
     else:
         client = RequestClient(
             metadata_extraction,

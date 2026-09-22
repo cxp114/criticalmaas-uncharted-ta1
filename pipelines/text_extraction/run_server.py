@@ -127,9 +127,10 @@ if __name__ == "__main__":
     #### start flask server or startup up the message queue
     if p.rest:
         if p.debug:
-            app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
-        else:
-            app.run(host="0.0.0.0", port=5000)
+            logger.warning(
+                "Flask debug mode is disabled for safety; use --log_level for verbose logging."
+            )
+        app.run(host="0.0.0.0", port=5000, debug=False, use_reloader=False)
     else:
         client = RequestClient(
             pipeline,

@@ -1,5 +1,8 @@
 name: Build Containers
 
+permissions:
+  contents: read
+
 # manual trigger only
 on:
   workflow_dispatch:

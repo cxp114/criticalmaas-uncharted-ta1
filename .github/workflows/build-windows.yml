@@ -1,5 +1,8 @@
 name: Build Windows Launcher
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
