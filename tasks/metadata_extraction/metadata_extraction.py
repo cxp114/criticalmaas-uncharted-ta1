@@ -7,9 +7,10 @@ import sys
 import cv2
 import numpy as np
 from PIL.Image import Image as PILImage
-from langchain.schema import SystemMessage, PromptValue
-from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate
-from langchain.output_parsers import PydanticOutputParser
+from langchain_core.messages import SystemMessage
+from langchain_core.prompt_values import PromptValue
+from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate
+from langchain_core.output_parsers import PydanticOutputParser
 from langchain_openai import AzureChatOpenAI, ChatOpenAI
 from pydantic import BaseModel, Field
 import tiktoken
