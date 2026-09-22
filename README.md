@@ -110,6 +110,18 @@ pwsh -File .\scripts\build-windows.ps1 \
   -Bundle onedir
 ```
 
+### 2.1 生成 release 压缩包
+
+```powershell
+pwsh -File .\scripts\build-windows.ps1 \
+  -PythonExecutable "C:\Path\To\python.exe" \
+  -Clean \
+  -Runtime cpu \
+  -Bundle onedir \
+  -Archive \
+  -ReleaseLabel v0.1.0
+```
+
 常用参数：
 
 - `-PythonExecutable`：构建用 Python，可带空格路径
@@ -118,12 +130,16 @@ pwsh -File .\scripts\build-windows.ps1 \
 - `-BuildPath`：默认 `build/windows-launcher`
 - `-Runtime cpu|gpu`：写入构建意图；GPU 仍需你自行准备兼容 CUDA/PyTorch/Detectron2 环境
 - `-Bundle onedir|onefile`：生成目录版或单文件版 launcher
+- `-Archive`：额外生成 zip 发布包
+- `-ReleaseLabel`：用于 zip 文件名的版本/标签，例如 `v0.1.0`
+- `-ArchivePath`：发布压缩包输出目录，默认 `dist/release`
 - `-Clean`：清理旧的 `dist/` / `build/`
 
 产物位置：
 
 - `onedir`：`dist/windows-launcher/criticalmaas/criticalmaas.exe`
 - `onefile`：`dist/windows-launcher/criticalmaas.exe`
+- `release zip`：`dist/release/criticalmaas-windows-<label>-<bundle>.zip`
 
 ### 3. smoke test
 
@@ -214,6 +230,33 @@ py -3.10 -m venv .venv
 - GPU 运行需要额外 CUDA / cuDNN / 驱动匹配
 
 因此本仓库采取的是**诚实可运行的 launcher 方案**，而不是留下无法工作的占位“全功能 exe”。
+
+
+## Release 编译与发布
+
+新增：`.github/workflows/release-windows.yml`
+
+用途：
+
+- `git push` 带 `v*` 标签时，在 `windows-latest` 上构建 release 版 launcher
+- 生成 `dist/release/*.zip`
+- 上传 workflow artifact
+- 自动把 zip 作为 GitHub Release asset 发布
+
+建议流程：
+
+```powershell
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+手动触发 `workflow_dispatch` 时，可以自定义：
+
+- `release_label`
+- `bundle`（`onedir` / `onefile`）
+
+默认发布形式建议使用 `onedir + zip`，比单文件更稳定，也更符合当前 launcher + repo payload 的交付方式。
+
 
 ## GitHub Actions Windows workflow
 

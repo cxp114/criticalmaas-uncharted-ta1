@@ -1,0 +1,98 @@
+name: Release Windows Launcher
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_label:
+        description: 'Archive label override (defaults to tag name or run number)'
+        required: false
+        type: string
+      bundle:
+        description: 'PyInstaller bundle mode'
+        required: false
+        default: 'onedir'
+        type: choice
+        options:
+          - onedir
+          - onefile
+
+jobs:
+  build-release:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: 'requirements/windows-build.txt'
+
+      - name: Resolve release metadata
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $label = "${{ inputs.release_label }}"
+            if ([string]::IsNullOrWhiteSpace($label)) {
+              $label = "run-${{ github.run_number }}"
+            }
+            $bundle = "${{ inputs.bundle }}"
+          }
+          else {
+            $label = "${{ github.ref_name }}"
+            $bundle = "onedir"
+          }
+          "RELEASE_LABEL=$label" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "BUNDLE_MODE=$bundle" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build release launcher archive
+        run: |
+          ./scripts/build-windows.ps1 `
+            -PythonExecutable (Get-Command python).Source `
+            -Clean `
+            -Runtime cpu `
+            -Bundle $env:BUNDLE_MODE `
+            -Archive `
+            -ReleaseLabel $env:RELEASE_LABEL
+
+      - name: Smoke test launcher --version
+        run: |
+          if ($env:BUNDLE_MODE -eq 'onefile') {
+            ./dist/windows-launcher/criticalmaas.exe --version
+          }
+          else {
+            ./dist/windows-launcher/criticalmaas/criticalmaas.exe --version
+          }
+
+      - name: Smoke test launcher --help
+        run: |
+          if ($env:BUNDLE_MODE -eq 'onefile') {
+            ./dist/windows-launcher/criticalmaas.exe --help
+          }
+          else {
+            ./dist/windows-launcher/criticalmaas/criticalmaas.exe --help
+          }
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: criticalmaas-windows-${{ env.RELEASE_LABEL }}-${{ env.BUNDLE_MODE }}
+          path: dist/release/*.zip
+          if-no-files-found: error
+
+      - name: Publish GitHub release asset
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/release/*.zip
+          generate_release_notes: true

@@ -8,6 +8,9 @@ param(
     [string]$Runtime = "cpu",
     [ValidateSet("onedir", "onefile")]
     [string]$Bundle = "onedir",
+    [string]$ArchivePath = "dist/release",
+    [string]$ReleaseLabel = "",
+    [switch]$Archive,
     [switch]$Clean
 )
 
@@ -19,6 +22,7 @@ $RepoRoot = (Resolve-Path -LiteralPath $RepoRoot).Path
 $VenvFullPath = Join-Path $RepoRoot $VenvPath
 $DistFullPath = Join-Path $RepoRoot $DistPath
 $BuildFullPath = Join-Path $RepoRoot $BuildPath
+$ArchiveFullPath = Join-Path $RepoRoot $ArchivePath
 $RequirementsFile = Join-Path $RepoRoot "requirements/windows-build.txt"
 $SpecFile = Join-Path $RepoRoot "pyinstaller/criticalmaas_launcher.spec"
 
@@ -46,12 +50,24 @@ function Invoke-VenvPython {
     }
 }
 
+function Get-ArchiveLabel {
+    param(
+        [string]$Candidate
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Candidate)) {
+        return "manual"
+    }
+
+    return ($Candidate -replace '[^A-Za-z0-9._-]', '-')
+}
+
 Write-Host "Repository root: $RepoRoot"
 Write-Host "Requested runtime profile: $Runtime"
 Write-Host "Requested bundle mode: $Bundle"
 
 if ($Clean) {
-    foreach ($PathToRemove in @($DistFullPath, $BuildFullPath)) {
+    foreach ($PathToRemove in @($DistFullPath, $BuildFullPath, $ArchiveFullPath)) {
         if (Test-Path -LiteralPath $PathToRemove) {
             Write-Host "Removing $PathToRemove"
             Remove-Item -LiteralPath $PathToRemove -Recurse -Force
@@ -78,6 +94,7 @@ New-Item -ItemType Directory -Force -Path $DistFullPath | Out-Null
 New-Item -ItemType Directory -Force -Path $BuildFullPath | Out-Null
 
 $env:CRITICALMAAS_BUNDLE_MODE = $Bundle
+$env:CRITICALMAAS_PROJECT_ROOT = $RepoRoot
 try {
     Invoke-VenvPython -Arguments @(
         "-m", "PyInstaller",
@@ -90,6 +107,7 @@ try {
 }
 finally {
     Remove-Item Env:CRITICALMAAS_BUNDLE_MODE -ErrorAction SilentlyContinue
+    Remove-Item Env:CRITICALMAAS_PROJECT_ROOT -ErrorAction SilentlyContinue
 }
 
 $LauncherPath = if ($Bundle -eq "onefile") {
@@ -103,5 +121,27 @@ if (-not (Test-Path -LiteralPath $LauncherPath)) {
 }
 
 Write-Host "Built launcher: $LauncherPath"
+
+if ($Archive) {
+    New-Item -ItemType Directory -Force -Path $ArchiveFullPath | Out-Null
+    $ArchiveLabel = Get-ArchiveLabel -Candidate $ReleaseLabel
+    $ArchiveFileName = "criticalmaas-windows-$ArchiveLabel-$Bundle.zip"
+    $ArchiveFile = Join-Path $ArchiveFullPath $ArchiveFileName
+
+    if (Test-Path -LiteralPath $ArchiveFile) {
+        Remove-Item -LiteralPath $ArchiveFile -Force
+    }
+
+    if ($Bundle -eq "onefile") {
+        Compress-Archive -LiteralPath $LauncherPath -DestinationPath $ArchiveFile
+    }
+    else {
+        $LauncherDir = Split-Path -Parent $LauncherPath
+        Compress-Archive -LiteralPath $LauncherDir -DestinationPath $ArchiveFile
+    }
+
+    Write-Host "Created release archive: $ArchiveFile"
+}
+
 Write-Host "Note: this launcher does not bundle model weights or unsupported Windows-native runtime stacks."
 Write-Host "Prepare a Python environment with pipeline dependencies, then pass --python or set CRITICALMAAS_PYTHON when running pipeline/server commands."

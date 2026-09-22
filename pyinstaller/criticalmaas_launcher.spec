@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from pathlib import Path
 import os
-project_root = Path(SPECPATH).parent.parent.resolve()
+project_root = Path(os.environ.get("CRITICALMAAS_PROJECT_ROOT", Path.cwd())).resolve()
 bundle_mode = os.environ.get("CRITICALMAAS_BUNDLE_MODE", "onedir").lower()
 name = "criticalmaas"
 
