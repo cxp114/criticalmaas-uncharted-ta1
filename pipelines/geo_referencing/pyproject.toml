@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lara-georeferencing"
+version = "1.0.0"
+description = "LARA georeferencing pipeline and server"
+readme = "README.md"
+dependencies = ["jsons", "flask", "lara-tasks[segmentation]", "mypy-boto3-s3"]
+
+[tool.setuptools.packages]
+find = {}
